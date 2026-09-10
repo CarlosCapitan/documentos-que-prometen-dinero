@@ -10,12 +10,12 @@ matplotlib.use("Agg"); import matplotlib.pyplot as plt
 # Los numeros NO se teclean: salen de cap05_montecarlo.py (ejecutarlo antes).
 d = np.load(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "cap05_datos.npz"))
 N = list(d["N"])
-ETQ = ["independiente", "ciclo suave (σ=0,30)", "ciclo moderado (σ=0,50)", "ciclo fuerte (σ=0,80)"]
+ETQ = ["independientes", "ciclo suave", "ciclo moderado", "ciclo fuerte"]
 P1 = {e: list(100 * d["p_recuperar"][k]) for k, e in enumerate(ETQ)}
 SD = {e: list(d["sd"][k]) for k, e in enumerate(ETQ)}
 SUELO_08 = 100 * float(d["suelo_08"])
-COL = {"independiente": "#1f4e79", "ciclo suave (σ=0,30)": "#7f9fc0",
-       "ciclo moderado (σ=0,50)": "#e08214", "ciclo fuerte (σ=0,80)": "#a63603"}
+COL = {"independientes": "#1f4e79", "ciclo suave": "#7f9fc0",
+       "ciclo moderado": "#e08214", "ciclo fuerte": "#a63603"}
 
 fig, ax = plt.subplots(1, 2, figsize=(13.5, 5.0))
 
