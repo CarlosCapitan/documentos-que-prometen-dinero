@@ -109,3 +109,35 @@ for cierre in (0.0, 0.15):
     print(f"  {'':<32} aciertos por ano en los vivos: {tasa:.1%}")
     print(f"  {'':<32} con >=7 seguidos: {(mx>=7).sum():>4}  "
           f"({100*(mx>=7).mean():.2f} % de los vivos)")
+
+# ---------- 5. ¿y si alguno tuviera talento de verdad? -------------------------
+# Hasta aqui nadie tenia talento. Ahora si: una parte de los gestores bate a su
+# indice con probabilidad mayor que la moneda. La pregunta es si la tabla sirve
+# para encontrarlos. Todo es calculo exacto (p_racha y binomial), sin simulacion.
+from math import comb
+def p_al_menos(n, k, p):
+    """P(batir al indice en al menos k de n anos), sin exigir que sean seguidos."""
+    return sum(comb(n, j) * p**j * (1 - p)**(n - j) for j in range(k, n + 1))
+
+print("\n" + "="*78)
+print("¿Y SI ALGUNO TUVIERA TALENTO? Lo que la racha dice de verdad")
+print("="*78)
+print("20.000 gestores. Los que no tienen talento baten al indice con p = 0,50.")
+print("Los que si, con p = 0,55 o 0,60 cada ano.\n")
+N = 20_000
+print(f"{'con talento':>12}{'p talento':>11}{'  de los que tienen racha >=7 en 10 anos':>42}{'  de los talentosos,':>22}")
+print(f"{'':>12}{'':>11}{'   cuantos tienen talento de verdad':>42}{'  cuantos la tienen':>22}")
+for f in (0.01, 0.05, 0.20):
+    for ps in (0.55, 0.60):
+        a, b = p_racha(10, 7, ps), p_racha(10, 7, 0.5)
+        share = f * a / (f * a + (1 - f) * b)
+        print(f"{f:>11.0%}{ps:>11.2f}{share:>41.1%}{a:>22.1%}")
+
+print("\nCon mas anos de historial, y mirando cuantos anos bate en total (no la racha):")
+print(f"{'con talento':>12}{'p talento':>11}{'regla':>26}{'  cuantos de los que la cumplen':>32}{'  talentosos que la cumplen':>28}")
+for f in (0.05,):
+    for ps in (0.55, 0.60):
+        for n, k in ((10, 8), (20, 14), (30, 20)):
+            a, b = p_al_menos(n, k, ps), p_al_menos(n, k, 0.5)
+            share = f * a / (f * a + (1 - f) * b)
+            print(f"{f:>11.0%}{ps:>11.2f}{f'>= {k} de {n} anos':>26}{share:>31.1%}{a:>28.1%}")
