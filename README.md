@@ -31,6 +31,7 @@ Menos de dos minutos en un portátil normal.
 
 ```bash
 python codigo/figura_01.py          # cap. 1 · veinte columnas de azar
+python codigo/cap02_tiendas.py      # cap. 2 · un plan de mejora que no hace nada
 python codigo/cap05_montecarlo.py   # cap. 5 · cartera independiente frente a ciclo común
 python codigo/figura_05.py          #          (necesita el paso anterior)
 python codigo/cap06_cuartiles.py    # cap. 6 · cuántos fondos pueden llamarse «primer cuartil»
@@ -48,7 +49,7 @@ ejecución. Si en tu máquina sale otra cosa, es un error, y me interesa saberlo
 
 | capítulo | datos |
 |---|---|
-| 1, 5, 7, 8 | ninguno: simulaciones donde la respuesta la ponemos nosotros |
+| 1, 2, 5, 7, 8 | ninguno: simulaciones donde la respuesta la ponemos nosotros |
 | 6 | fronteras de rentabilidad publicadas por PitchBook (Benchmarks Q4 2024, capital riesgo global), transcritas en el guion con su fuente |
 | 9 | dos tablas pequeñas de resultados ya medidos, incluidas en `datos/` |
 
