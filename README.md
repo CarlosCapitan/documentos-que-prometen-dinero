@@ -59,5 +59,12 @@ herramientas para acceder a esa plataforma.
 
 ## Licencia
 
-El código, bajo licencia MIT (ver `LICENSE`). El texto del libro no está en este
-repositorio.
+La licencia MIT (`LICENSE`, texto estándar en inglés) cubre el código de
+`codigo/`, las figuras que genera y las tablas de resultados de `datos/`.
+
+No cubre el texto del libro «Documentos que prometen dinero», que no está en
+este repositorio y cuyos derechos se reserva el autor.
+
+Las fronteras de rentabilidad del capítulo 6 son cifras publicadas por PitchBook
+(Benchmarks Q4 2024): se citan con su fuente y se rigen por las condiciones de
+su editor.
