@@ -62,3 +62,41 @@ print(f"  correlacion de la ganadora, el primer ano : {np.median(np.abs(r1g)):.2
 print(f"  la misma variable, el ano siguiente       : {np.median(np.abs(r2g)):.2f} (mediana)")
 print(f"  ¿conserva el signo?                        {np.mean(np.sign(r1g)==np.sign(r2g)):.0%} de las veces")
 print(f"  correlacion entre lo de un ano y lo del otro: {np.corrcoef(r1g, r2g)[0,1]:+.3f}")
+
+# ---------- UNA SOLA VARIABLE, MIRADA DE VARIAS MANERAS RAZONABLES --------------
+# No hace falta probar veinte cosas. Basta con una, mirada de varias formas que
+# cualquiera defenderia ante un comite. Todas las series siguen siendo azar.
+from scipy import stats
+def p_valor(x, y):
+    return stats.pearsonr(x, y)[1]
+def maneras(y, x):
+    ps = []
+    ps.append(p_valor(x, y))                          # 1. los 24 meses
+    ps.append(p_valor(x[12:], y[12:]))                # 2. solo el ultimo ano
+    ps.append(p_valor(x[:12], y[:12]))                # 3. solo el primer ano
+    quita = np.argsort(np.abs(y - y.mean()))[-2:]     # 4. sin los dos meses "raros"
+    keep = np.setdiff1d(np.arange(len(y)), quita)
+    ps.append(p_valor(x[keep], y[keep]))
+    ps.append(p_valor(x[:-1], y[1:]))                 # 5. con un mes de retraso
+    return np.array(ps)
+print("\n" + "="*76)
+print("UNA SOLA VARIABLE, MIRADA DE CINCO MANERAS RAZONABLES")
+print("="*76)
+R2 = 20_000
+rr = np.random.default_rng(424242)
+res = np.array([maneras(rr.standard_normal(24), rr.standard_normal(24)) for _ in range(R2)])
+sig = res < 0.05
+nombres = ["los 24 meses", "solo el ultimo ano", "solo el primer ano",
+           "sin los dos meses raros", "con un mes de retraso"]
+for k in range(5):
+    print(f"  {nombres[k]:<28} significativa en el {sig[:, k].mean():5.1%} de los casos")
+print(f"\n  alguna de las cinco, con UNA variable     : {sig.any(1).mean():.1%}")
+for m in (2, 3, 4):
+    print(f"  alguna de las {m} primeras maneras          : {sig[:, :m].any(1).mean():.1%}")
+# veinte variables, cinco maneras cada una
+R3 = 4000
+alg = 0
+for _ in range(R3):
+    y = rr.standard_normal(24)
+    alg += any((maneras(y, rr.standard_normal(24)) < 0.05).any() for _ in range(20))
+print(f"  veinte variables x cinco maneras          : {alg/R3:.1%}")
