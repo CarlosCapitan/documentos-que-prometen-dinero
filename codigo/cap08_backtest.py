@@ -141,3 +141,61 @@ np.savez(os.path.join(os.path.dirname(os.path.abspath(__file__)), "cap08_datos.n
          IN=IN, OUT=OUT, r_gan=r_gan, ret=ret,
          nombre=np.array([nom[j]]), sh_in=np.array([sh_in[j]]), sh_out=np.array([sh_out]))
 print("\n  guardado cap08_datos.npz")
+
+# ---------- 6. afinar mirando los anos "limpios" --------------------------------
+# El procedimiento honesto: elegir con los 8 primeros anos y mirar los 4
+# siguientes UNA vez. El procedimiento habitual sin mala fe: si la elegida sale
+# mal en esos 4 anos, se prueba la siguiente mejor, y la siguiente... hasta que
+# una sale bien en los dos periodos. Se juzga despues en 4 anos mas, nuevos de
+# verdad. Todo sobre precios sorteados: no hay nada que encontrar.
+def tres_periodos(rng, dias=4000, c1=2000, c2=3000):
+    ret = rng.standard_normal(dias) * VOL
+    precio = 100 * np.exp(np.cumsum(ret))
+    _, P = señales(precio)
+    P = np.vstack([np.zeros((1, P.shape[1])), P[:-1]])[:dias]
+    R = P * ret[:, None]
+    s1 = np.array([sharpe(R[:c1, j]) for j in range(R.shape[1])])
+    s2 = np.array([sharpe(R[c1:c2, j]) for j in range(R.shape[1])])
+    s3 = np.array([sharpe(R[c2:, j]) for j in range(R.shape[1])])
+    return s1, s2, s3
+
+print("\n" + "="*78)
+print("AFINAR MIRANDO LOS ANOS LIMPIOS: probar la siguiente hasta que salga bien")
+print("="*78)
+UMBRAL = 0.5
+hon2, hon3, af1, af2, af3, intentos, encontrada = [], [], [], [], [], [], 0
+for i in range(300):
+    s1, s2, s3 = tres_periodos(np.random.default_rng(5000 + i))
+    orden = np.argsort(-s1)
+    hon2.append(s2[orden[0]]); hon3.append(s3[orden[0]])
+    for t, j in enumerate(orden, start=1):               # por orden, todas las que haga falta
+        if s1[j] > UMBRAL and s2[j] > UMBRAL:
+            af1.append(s1[j]); af2.append(s2[j]); af3.append(s3[j])
+            intentos.append(t); encontrada += 1
+            break
+hon2, hon3, af1, af2, af3 = map(np.array, (hon2, hon3, af1, af2, af3))
+print(f"  honesto: la mejor de los 8 anos, mirada una vez")
+print(f"    Sharpe en los 4 anos siguientes (mediana)       : {np.median(hon2):+.2f}")
+print(f"    Sharpe en los 4 anos nuevos     (mediana)       : {np.median(hon3):+.2f}")
+print(f"  afinado: probar por orden hasta que una pase de {UMBRAL} en los dos periodos")
+print(f"    series en que se encuentra una                  : {encontrada} de 300 ({encontrada/3:.0f} %)")
+print(f"    intentos necesarios (mediana)                   : {np.median(intentos):.0f}")
+print(f"    Sharpe de la encontrada, 8 anos     (mediana)   : {np.median(af1):+.2f}")
+print(f"    Sharpe de la encontrada, 4 siguientes (mediana) : {np.median(af2):+.2f}")
+print(f"    Sharpe de la encontrada, 4 NUEVOS   (mediana)   : {np.median(af3):+.2f}")
+print(f"    ... y sigue por encima de {UMBRAL} en los nuevos : {(af3 > UMBRAL).mean():.0%}")
+
+# ---------- 7. el coste que el folleto no pone ---------------------------------
+# La ganadora de la pasada de arriba cambia de posicion cada vez que se cruzan
+# las medias. Cada cambio cuesta algo (comision y diferencia de precio).
+print("\n" + "="*78)
+print("EL COSTE QUE EL FOLLETO NO PONE")
+print("="*78)
+_, P1 = señales(100 * np.exp(np.cumsum(ret)))
+pos = np.vstack([np.zeros((1, P1.shape[1])), P1[:-1]])[:N_DIAS][:, j]
+cambios = np.abs(np.diff(pos, prepend=0.0))
+print(f"  la ganadora cambia de posicion {cambios[:CORTE].sum()/ (CORTE/DIAS_ANO):.1f} veces al ano (en unidades de posicion)")
+for coste in (0.0, 0.001, 0.002, 0.005):
+    rn = r_gan - cambios * coste
+    print(f"    coste por cambio {coste:>6.1%}  ->  Sharpe en los 8 anos: {sharpe(rn[:CORTE]):+.2f}"
+          f"   rentab. anual: {(np.prod(1+rn[:CORTE])**(DIAS_ANO/CORTE)-1):+.1%}")
